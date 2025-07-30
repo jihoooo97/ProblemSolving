@@ -30,4 +30,5 @@
 |  |
 | ------- |
 | [0007-reverse-integer](https://github.com/jihoooo97/ProblemSolving/tree/master/0007-reverse-integer) |
+| [0009-palindrome-number](https://github.com/jihoooo97/ProblemSolving/tree/master/0009-palindrome-number) |
 <!---LeetCode Topics End-->
