@@ -1,67 +1,68 @@
-let input = readLine()!.split { $0 == " " }.map { Int("\($0)")! }
-let (n, m) = (input[0], input[1])
-var lab = [[Int]]()
-var empty = [(Int, Int)]()
-var virus = [(Int, Int)]()
+let input = readLine()!.split(separator: " ").map { Int($0)! }
+let N = input[0], M = input[1]
+var map = [[Int]]()
+var virusPositions = [(Int, Int)]()
 
-for i in 0..<n {
-    let row = readLine()!.split { $0 == " " }.map { Int("\($0)")! }
-    lab.append(row)
-    
-    for j in 0..<m {
-        if row[j] == 0 {
-            empty.append((i, j))
-        }
-        
+for i in 0..<N {
+    let row = readLine()!.split(separator: " ").map { Int(String($0))! }
+    map.append(row)
+    for j in 0..<M {
         if row[j] == 2 {
-            virus.append((i, j))
+            virusPositions.append((i, j))
         }
     }
 }
 
+let dx = [-1, 1, 0, 0]
+let dy = [0, 0, -1, 1]
 
-let directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-let emptyCount = empty.count
-var maxSafe = 0
-
-for i in 0..<emptyCount - 2 {
-    for j in i + 1..<emptyCount - 1 {
-        for k in j + 1..<emptyCount {
-            var copyLab = lab
-            let walls = [empty[i], empty[j], empty[k]]
-            
-            for (x, y) in walls {
-                copyLab[x][y] = 1
-            }
-            
-            bfs(&copyLab)
-            maxSafe = max(maxSafe, countSafe(copyLab))
-        }
-    }
-}
-
-func bfs(_ map: inout [[Int]]) {
-    var queue = virus
-    var index = 0
-    
-    while index < queue.count {
-        let (x, y) = queue[index]
-        index += 1
-        
-        for (dx, dy) in directions {
-            let nx = x + dx
-            let ny = y + dy
-            
-            if (nx >= 0 && nx < n) && (ny >= 0 && ny < m) && map[nx][ny] == 0 {
-                map[nx][ny] = 2
+func spreadVirus(_ tempMap: inout [[Int]]) {
+    var queue = virusPositions
+    while !queue.isEmpty {
+        let (x, y) = queue.removeLast()
+        for k in 0..<4 {
+            let nx = x + dx[k]
+            let ny = y + dy[k]
+            if nx >= 0 && nx < N && ny >= 0 && ny < M && tempMap[nx][ny] == 0 {
+                tempMap[nx][ny] = 2
                 queue.append((nx, ny))
             }
         }
     }
 }
 
-func countSafe(_ map: [[Int]]) -> Int {
-    return map.flatMap { $0 }.filter { $0 == 0 }.count
+func safeArea(_ tempMap: [[Int]]) -> Int {
+    var count = 0
+    for i in 0..<N {
+        for j in 0..<M {
+            if tempMap[i][j] == 0 {
+                count += 1
+            }
+        }
+    }
+    return count
 }
 
-print(maxSafe)
+var maxSafeArea = 0
+
+func dfs(_ depth: Int, _ start: Int) {
+    if depth == 3 {
+        var tempMap = map
+        spreadVirus(&tempMap)
+        maxSafeArea = max(maxSafeArea, safeArea(tempMap))
+        return
+    }
+    
+    for idx in start..<(N * M) {
+        let x = idx / M
+        let y = idx % M
+        if map[x][y] == 0 {
+            map[x][y] = 1
+            dfs(depth + 1, idx + 1)
+            map[x][y] = 0
+        }
+    }
+}
+
+dfs(0, 0)
+print(maxSafeArea)
